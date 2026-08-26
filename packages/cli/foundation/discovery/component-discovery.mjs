@@ -742,9 +742,9 @@ export async function listResolvableComponentNames(
   // which require a paired Foo.tsx). This covers parent-doc subcomponents like
   // ResizeHandle (documented inside Resizable.doc.mjs) and doc-only components
   // like SyntaxTheme (theme/SyntaxTheme.doc.mjs) that have no Foo.tsx.
+  /** @type {string[]} */
   const coreDocFiles = [];
   /** @param {string} dir */
-  function collectCoreDocFiles(dir) {
     if (!fs.existsSync(dir)) return;
     for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
       const full = path.join(dir, entry.name);
