@@ -745,6 +745,7 @@ export async function listResolvableComponentNames(
   /** @type {string[]} */
   const coreDocFiles = [];
   /** @param {string} dir */
+  function collectCoreDocFiles(dir) {
     if (!fs.existsSync(dir)) return;
     for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
       const full = path.join(dir, entry.name);
