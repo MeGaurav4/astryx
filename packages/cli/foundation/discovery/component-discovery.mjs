@@ -778,6 +778,30 @@ export async function listResolvableComponentNames(
       }
     }
   }
+  // Also include source-fallback resolvable names (those with a source file
+  // but no doc, e.g. AppShell/AppShellMobileContext.tsx). astryx component
+  // resolves these via findComponentSource even without a doc, so the
+  // skeleton list must include them to satisfy #4677.
+  /** @type {string[]} */
+  const sourceFiles = [];
+  /** @param {string} dir */
+  function collectSourceFiles(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (SKIP_DIRS.has(entry.name)) continue;
+        collectSourceFiles(full);
+      } else if (isComponentSourceFile(entry.name, dir)) {
+        sourceFiles.push(full);
+      }
+    }
+  }
+  collectSourceFiles(path.join(coreDir, 'src'));
+  for (const file of sourceFiles) {
+    const name = componentNameFromFile(path.basename(file));
+    if (name) names.add(name.replace(/^XDS/, ''));
+  }
   // Also include any docPaths from discoverOwnedComponents for loaded integrations
   // that are not under core/src (kept for back-compat, though the walk above
   // already covers core).
