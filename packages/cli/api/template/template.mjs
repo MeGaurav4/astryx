@@ -138,19 +138,13 @@ export async function template(name, options = {}) {
     // is surfaced on the discover/doctor paths.
   }
   const coreDir = findCoreDir(cwd);
-  if (coreDir === null && (skeleton || show || !targetPath)) {
-    // Without core there is nothing exact to resolve against, and an
-    // unfiltered list would advertise names `astryx component` itself
-    // refuses with ERR_CORE_NOT_FOUND. Fail the same way instead.
-    throw new AstryxError(
-      'Could not find @astryxdesign/core package',
-      undefined,
-      ERROR_CODES.ERR_CORE_NOT_FOUND,
-    );
-  }
+  // Without core there is nothing exact to resolve against. Advertise an
+  // empty resolvable list rather than unfiltered names: every advertised
+  // name still resolves (vacuously), matching what `astryx component`
+  // does when it cannot resolve anything without its core peer.
   const isResolvable =
     coreDir === null
-      ? null
+      ? () => false
       : /** @param {string} name */ name =>
           isResolvableComponentName(name, {
             coreDir,

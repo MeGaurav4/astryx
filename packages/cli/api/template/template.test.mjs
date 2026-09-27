@@ -295,22 +295,22 @@ describe('template --skeleton advertises only resolvable components', () => {
     expect(detail.data.components).toContain('Timeline');
   }, 60000);
 
-  it('show and skeleton fail explicitly without core (ERR_CORE_NOT_FOUND)', async () => {
+  it('show and skeleton advertise nothing resolvable without core', async () => {
     // Without the optional core peer there is nothing exact to resolve
-    // against, so an unfiltered list would advertise names `astryx
-    // component` itself refuses. Both leaves fail the same way instead.
+    // against. The released list still works, but the resolvable list is
+    // empty rather than advertising names `astryx component` itself would
+    // refuse — every advertised name still resolves, vacuously.
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'template-nocore-'));
     try {
-      for (const options of [{show: true}, {skeleton: true}]) {
-        let error = null;
-        try {
-          await template('contact-form', {...options, cwd: dir});
-        } catch (err) {
-          error = err;
-        }
-        expect(error).not.toBeNull();
-        expect(error && error.code).toBe('ERR_CORE_NOT_FOUND');
-      }
+      const show = await template('contact-form', {show: true, cwd: dir});
+      expect(show.data.components.length).toBeGreaterThan(0);
+      expect(show.data.resolvableComponents).toEqual([]);
+      const skeleton = await template('contact-form', {
+        skeleton: true,
+        cwd: dir,
+      });
+      expect(skeleton.data.components.length).toBeGreaterThan(0);
+      expect(skeleton.data.resolvableComponents).toEqual([]);
     } finally {
       fs.rmSync(dir, {recursive: true, force: true});
     }
